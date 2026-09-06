@@ -1,0 +1,11 @@
+# Binaries
+server
+
+# Env
+.env
+
+# Go
+*.exe
+*.test
+*.out
+vendor/
