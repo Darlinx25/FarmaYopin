@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'auth_storage.dart';
@@ -15,10 +17,12 @@ class ApiException implements Exception {
 }
 
 class ApiClient {
-  static const String baseUrl = String.fromEnvironment(
-    'API_URL',
-    defaultValue: 'http://10.0.2.2:8080',
-  );
+  static String get baseUrl {
+    const fromEnv = String.fromEnvironment('API_URL');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    if (!kIsWeb && Platform.isAndroid) return 'http://10.0.2.2:8080';
+    return 'http://localhost:8080';
+  }
 
   static Future<Map<String, String>> _headers({bool withAuth = true}) async {
     final headers = <String, String>{

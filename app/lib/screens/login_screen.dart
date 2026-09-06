@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../api/api_client.dart';
+import '../api/auth_storage.dart';
+import 'home_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -32,12 +35,62 @@ class _LoginBodyState extends State<_LoginBody> {
   final _passwordController = TextEditingController();
   bool _remember = false;
   bool _obscure = true;
+  bool _loading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _showMessage(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Theme.of(context).colorScheme.error : const Color(0xFFF28E2A),
+      ),
+    );
+  }
+
+  Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showMessage('Ingresá tu email y contraseña', isError: true);
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final data = await ApiClient.post(
+        '/login',
+        body: {'email': email, 'password': password},
+        withAuth: false,
+      );
+
+      final user = data['user'] as Map<String, dynamic>;
+      await AuthStorage.saveSession(
+        token: data['token'] as String,
+        userId: user['id'],
+        name: user['name'],
+        email: user['email'],
+        role: user['role'],
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } on ApiException catch (e) {
+      _showMessage(e.message, isError: true);
+    } catch (_) {
+      _showMessage('No se pudo conectar con el servidor', isError: true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -329,22 +382,27 @@ class _LoginBodyState extends State<_LoginBody> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Login en progreso...')),
-                            );
-                          },
-                          child: const Text(
-                            'Iniciar Sesión',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontFamily: 'Work Sans',
-                              fontWeight: FontWeight.w400,
-                              letterSpacing: -0.26,
-                            ),
-                          ),
+                          onPressed: _loading ? null : _login,
+                          child: _loading
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Iniciar Sesión',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontFamily: 'Work Sans',
+                                    fontWeight: FontWeight.w400,
+                                    letterSpacing: -0.26,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
