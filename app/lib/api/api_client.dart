@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -17,6 +18,8 @@ class ApiException implements Exception {
 }
 
 class ApiClient {
+  static const Duration _timeout = Duration(seconds: 10);
+
   static String get baseUrl {
     const fromEnv = String.fromEnvironment('API_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
@@ -39,36 +42,52 @@ class ApiClient {
   }
 
   static Future<dynamic> get(String path, {bool withAuth = true}) async {
-    final res = await http.get(
-      Uri.parse('$baseUrl$path'),
-      headers: await _headers(withAuth: withAuth),
-    );
-    return _handle(res);
+    return _send('GET', path, headers: await _headers(withAuth: withAuth));
   }
 
   static Future<dynamic> post(String path, {Object? body, bool withAuth = true}) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl$path'),
-      headers: await _headers(withAuth: withAuth),
-      body: jsonEncode(body ?? {}),
-    );
-    return _handle(res);
+    return _send('POST', path,
+        headers: await _headers(withAuth: withAuth), body: body);
   }
 
   static Future<dynamic> put(String path, {Object? body, bool withAuth = true}) async {
-    final res = await http.put(
-      Uri.parse('$baseUrl$path'),
-      headers: await _headers(withAuth: withAuth),
-      body: jsonEncode(body ?? {}),
-    );
-    return _handle(res);
+    return _send('PUT', path,
+        headers: await _headers(withAuth: withAuth), body: body);
   }
 
   static Future<dynamic> delete(String path, {bool withAuth = true}) async {
-    final res = await http.delete(
-      Uri.parse('$baseUrl$path'),
-      headers: await _headers(withAuth: withAuth),
-    );
+    return _send('DELETE', path, headers: await _headers(withAuth: withAuth));
+  }
+
+  static Future<dynamic> _send(
+    String method,
+    String path, {
+    required Map<String, String> headers,
+    Object? body,
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+    debugPrint('[API] $method → $uri${body != null ? ' body=$body' : ''}');
+    http.Response res;
+    try {
+      switch (method) {
+        case 'POST':
+          res = await http
+              .post(uri, headers: headers, body: jsonEncode(body ?? {}))
+              .timeout(_timeout);
+        case 'PUT':
+          res = await http
+              .put(uri, headers: headers, body: jsonEncode(body ?? {}))
+              .timeout(_timeout);
+        case 'DELETE':
+          res = await http.delete(uri, headers: headers).timeout(_timeout);
+        default:
+          res = await http.get(uri, headers: headers).timeout(_timeout);
+      }
+    } on TimeoutException {
+      throw ApiException('El servidor no respondió a tiempo');
+    } on SocketException {
+      throw ApiException('No se pudo conectar con el servidor');
+    }
     return _handle(res);
   }
 

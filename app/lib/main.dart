@@ -4,6 +4,11 @@ import 'screens/login_screen.dart';
 import 'theme.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterError.onError = (details) {
+    debugPrint('[FLUTTER-ERROR] ${details.exceptionAsString()}');
+    debugPrint(details.stack?.toString() ?? '');
+  };
   runApp(const FarmaYopinApp());
 }
 
