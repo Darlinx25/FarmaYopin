@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'register_screen.dart';
+
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -18,8 +20,25 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-class _LoginBody extends StatelessWidget {
+class _LoginBody extends StatefulWidget {
   const _LoginBody();
+
+  @override
+  State<_LoginBody> createState() => _LoginBodyState();
+}
+
+class _LoginBodyState extends State<_LoginBody> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _remember = false;
+  bool _obscure = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,18 +194,21 @@ class _LoginBody extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  Container(
-                                    width: double.infinity,
-                                    height: 48,
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    decoration: ShapeDecoration(
-                                      color: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        side: const BorderSide(
-                                          width: 1,
-                                          color: Color(0xFFE5E7EB),
-                                        ),
+                                  TextField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    decoration: InputDecoration(
+                                      hintText: 'tucorreo@ejemplo.com',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                      enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0xFFF28E2A), width: 1.5),
                                       ),
                                     ),
                                   ),
@@ -214,34 +236,26 @@ class _LoginBody extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  Container(
-                                    width: double.infinity,
-                                    height: 48,
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    decoration: ShapeDecoration(
-                                      color: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        side: const BorderSide(
-                                          width: 1,
-                                          color: Color(0xFFE5E7EB),
-                                        ),
+                                  TextField(
+                                    controller: _passwordController,
+                                    obscureText: _obscure,
+                                    decoration: InputDecoration(
+                                      hintText: '••••••••',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                      enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                                       ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      spacing: 8,
-                                      children: [
-                                        Container(
-                                          width: 20,
-                                          height: 20,
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: const BoxDecoration(),
-                                          child: const Stack(),
-                                        ),
-                                      ],
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(color: Color(0xFFF28E2A), width: 1.5),
+                                      ),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                                        onPressed: () => setState(() => _obscure = !_obscure),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -260,18 +274,14 @@ class _LoginBody extends StatelessWidget {
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     spacing: 6,
                                     children: [
-                                      Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: ShapeDecoration(
-                                          color: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            side: const BorderSide(
-                                              width: 1.50,
-                                              color: Color(0xFFF28E2A),
-                                            ),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
+                                      GestureDetector(
+                                        onTap: () => setState(() => _remember = !_remember),
+                                        child: Icon(
+                                          _remember
+                                              ? Icons.check_box
+                                              : Icons.check_box_outline_blank,
+                                          color: const Color(0xFFF28E2A),
+                                          size: 22,
                                         ),
                                       ),
                                       const Text(
@@ -286,14 +296,21 @@ class _LoginBody extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                  const Text(
-                                    '¿Olvidaste tu contraseña?',
-                                    style: TextStyle(
-                                      color: Color(0xFFF28E2A),
-                                      fontSize: 13,
-                                      fontFamily: 'Work Sans',
-                                      fontWeight: FontWeight.w400,
-                                      letterSpacing: -0.26,
+                                  GestureDetector(
+                                    onTap: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Recuperación de contraseña próximamente')),
+                                      );
+                                    },
+                                    child: const Text(
+                                      '¿Olvidaste tu contraseña?',
+                                      style: TextStyle(
+                                        color: Color(0xFFF28E2A),
+                                        fontSize: 13,
+                                        fontFamily: 'Work Sans',
+                                        fontWeight: FontWeight.w400,
+                                        letterSpacing: -0.26,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -302,33 +319,32 @@ class _LoginBody extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Container(
+                      SizedBox(
                         width: double.infinity,
                         height: 50,
-                        decoration: ShapeDecoration(
-                          color: const Color(0xFFF28E2A),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          spacing: 8,
-                          children: [
-                            Text(
-                              'Iniciar Sesión',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontFamily: 'Work Sans',
-                                fontWeight: FontWeight.w400,
-                                letterSpacing: -0.26,
-                              ),
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFFF28E2A),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                          ],
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Login en progreso...')),
+                            );
+                          },
+                          child: const Text(
+                            'Iniciar Sesión',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontFamily: 'Work Sans',
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: -0.26,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -353,17 +369,24 @@ class _LoginBody extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const Positioned(
+                      Positioned(
                         left: 160.50,
                         top: 23,
-                        child: Text(
-                          'Crear Cuenta',
-                          style: TextStyle(
-                            color: Color(0xFFF28E2A),
-                            fontSize: 13,
-                            fontFamily: 'Work Sans',
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: -0.26,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                            );
+                          },
+                          child: const Text(
+                            'Crear Cuenta',
+                            style: TextStyle(
+                              color: Color(0xFFF28E2A),
+                              fontSize: 13,
+                              fontFamily: 'Work Sans',
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: -0.26,
+                            ),
                           ),
                         ),
                       ),
