@@ -3,22 +3,8 @@
 Aplicación móvil de gestión de artículos de farmacia. Taller de Aplicaciones Móviles - UTEC Maldonado - Edición 2026.
 
 ## Arquitectura
+<img width="1477" height="789" alt="image" src="https://github.com/user-attachments/assets/35d71257-e618-409d-874f-3bc695115d71" />
 
-```
-┌─────────────────────────┐         HTTPS/JSON         ┌──────────────────────────┐
-│   App Flutter (móvil)   │  ───────────────────────►  │   Backend Go + Gin       │
-│                         │                            │   (contenedor Docker)    │
-│  - SQLite local         │                            │                          │
-│   (carrito, caché)      │ ◄───────────────────────   │  - REST API              │
-│                         │         JWT Bearer         │  - JWT auth              │
-└─────────────────────────┘                            └──────────┬───────────────┘
-                                                                  │ SQL
-                                                                  ▼
-                                                  ┌──────────────────────────┐
-                                                  │   MySQL 8 (Docker)       │
-                                                  │  users/products/sales    │
-                                                  └──────────────────────────┘
-```
 
 ### Justificación de la solución
 
