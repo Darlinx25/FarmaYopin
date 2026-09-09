@@ -15,3 +15,5 @@ android/local.properties
 
 # Misc
 *.log
+# Widget Preview related
+.widget_preview/

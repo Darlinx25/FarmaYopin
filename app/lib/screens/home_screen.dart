@@ -3,8 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../api/auth_storage.dart';
+import '../models/product.dart';
 import 'cart_screen.dart';
 import 'login_screen.dart';
+import 'product_detail_screen.dart';
 import 'profile_screen.dart';
 import 'purchase_history_screen.dart';
 
@@ -248,96 +250,116 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openDetail(_ProductCard card) {
+    final priceValue = double.tryParse(
+      card.price.replaceAll(r'$', '').replaceAll(',', ''),
+    ) ?? 0;
+    final product = Product(
+      id: 0,
+      name: card.name,
+      description: 'Analgésico y antiinflamatorio de uso común.',
+      price: priceValue,
+      stock: 120,
+      imageUrl: '',
+    );
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product)),
+    );
+  }
+
   Widget _productCard(_ProductCard product) {
-    return Container(
-      padding: const EdgeInsets.only(bottom: 12),
-      clipBehavior: Clip.antiAlias,
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(color: Color(0xFFE5E7EB)),
-          borderRadius: BorderRadius.circular(16),
+    return GestureDetector(
+      onTap: () => _openDetail(product),
+      child: Container(
+        padding: const EdgeInsets.only(bottom: 12),
+        clipBehavior: Clip.antiAlias,
+        decoration: ShapeDecoration(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: Color(0xFFE5E7EB)),
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 8,
-        children: [
-          SizedBox(
-            height: 110,
-            width: double.infinity,
-            child: Container(
-              color: const Color(0xFFD6E9F9),
-              child: const Icon(
-                Icons.medication,
-                color: Color(0xFF1E47EB),
-                size: 42,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 8,
+          children: [
+            SizedBox(
+              height: 110,
+              width: double.infinity,
+              child: Container(
+                color: const Color(0xFFD6E9F9),
+                child: const Icon(
+                  Icons.medication,
+                  color: Color(0xFF1E47EB),
+                  size: 42,
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 6,
-              children: [
-                Text(
-                  product.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF1E47EB),
-                    fontSize: 13,
-                    fontFamily: 'Work Sans',
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.26,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 6,
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF1E47EB),
+                      fontSize: 13,
+                      fontFamily: 'Work Sans',
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: -0.26,
+                    ),
                   ),
-                ),
-                Text(
-                  product.price,
-                  style: const TextStyle(
-                    color: Color(0xFFF28E2A),
-                    fontSize: 15,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
+                  Text(
+                    product.price,
+                    style: const TextStyle(
+                      color: Color(0xFFF28E2A),
+                      fontSize: 15,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  height: 32,
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFF28E2A),
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 32,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFFF28E2A),
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () => _addToCart(product),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add, color: Colors.white, size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'Agregar',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    onPressed: () => _addToCart(product),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.add, color: Colors.white, size: 14),
-                        SizedBox(width: 4),
-                        Text(
-                          'Agregar',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
