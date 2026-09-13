@@ -6,8 +6,6 @@ Aplicación móvil de gestión de artículos de farmacia. Taller de Aplicaciones
 <img width="1477" height="789" alt="image" src="https://github.com/user-attachments/assets/35d71257-e618-409d-874f-3bc695115d71" />
 
 
-### Justificación de la solución
-
 - **Backend Go + MySQL en Docker**: separación clara entre persistencia y presentación. El servidor expone una API REST con JSON, la base de datos queda aislada en su propia red Docker y persiste con un volumen (`mysql_data`).
 - **REST + JSON**: el formato estándar para apps móviles, fácil de consumir desde Flutter con el paquete `http`.
 - **JWT**: autenticación stateless, sin manejo de sesiones en servidor. Un token incluye `user_id`, `email` y `role` (admin/client).
