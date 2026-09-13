@@ -285,11 +285,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               GestureDetector(
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Recuperación de contraseña próximamente'),
-                    ),
-                  );
                 },
                 child: const Text(
                   '¿Olvidaste tu contraseña?',

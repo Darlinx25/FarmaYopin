@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
 
-class PaymentScreen extends StatefulWidget {
+class PaymentScreen extends StatelessWidget {
   const PaymentScreen({super.key});
 
   @override
-  State<PaymentScreen> createState() => _PaymentScreenState();
-}
-
-class _PaymentScreenState extends State<PaymentScreen> {
-  @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(
-        child: Text('PaymentScreen'),
-      ),
+      backgroundColor: Color(0xFFFAFAF9),
     );
   }
 }

@@ -75,7 +75,7 @@ Requisito: tener Flutter instalado.
 
 ```bash
 cd app
-flutter create --platforms=android,ios .   # genera android/, ios/ (no pisa lib/)
+flutter create --platforms=android,ios .
 flutter pub get
 flutter run
 ```

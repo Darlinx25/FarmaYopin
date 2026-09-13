@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
 
-class PurchasesScreen extends StatefulWidget {
+class PurchasesScreen extends StatelessWidget {
   const PurchasesScreen({super.key});
 
   @override
-  State<PurchasesScreen> createState() => _PurchasesScreenState();
-}
-
-class _PurchasesScreenState extends State<PurchasesScreen> {
-  @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(
-        child: Text('PurchasesScreen'),
-      ),
+      backgroundColor: Color(0xFFFAFAF9),
     );
   }
 }

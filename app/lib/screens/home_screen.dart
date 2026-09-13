@@ -49,12 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addToCart(_ProductCard product) {
     setState(() => _cartCount++);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${product.name} agregado al carrito'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   @override
@@ -212,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
         textInputAction: TextInputAction.search,
         onSubmitted: (value) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Buscando "$value" (próximamente)')),
+            SnackBar(content: Text('Buscando "$value"')),
           );
         },
         style: const TextStyle(
