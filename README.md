@@ -1,6 +1,7 @@
 # FarmaYopin
+Aplicación móvil de gestión de artículos de farmacia. Taller de Aplicaciones Móviles - UTEC Maldonado 2026.
 
-Aplicación móvil de gestión de artículos de farmacia. Taller de Aplicaciones Móviles - UTEC Maldonado - Edición 2026.
+<img width="3579" height="1984" alt="App - Farmacia (3)" src="https://github.com/user-attachments/assets/d8ecd9d0-f524-4222-a923-2d6d5a7c3b66" />
 
 ## Arquitectura
 <img width="1477" height="789" alt="image" src="https://github.com/user-attachments/assets/35d71257-e618-409d-874f-3bc695115d71" />
@@ -62,14 +63,11 @@ Todas las rutas autenticadas requieren header `Authorization: Bearer <token>`.
 ```bash
 docker compose up --build
 ```
-
 - API en `http://localhost:8080`
 - Health check: `curl http://localhost:8080/health`
 - Base de datos MySQL persiste en el volumen `mysql_data` (borrar con `docker compose down -v`)
 
 ### App Flutter
-
-Requisito: tener Flutter instalado.
 
 ```bash
 cd app
@@ -77,15 +75,11 @@ flutter create --platforms=android,ios .
 flutter pub get
 flutter run
 ```
-
 La app apunta por defecto a `http://10.0.2.2:8080` (host de la máquina desde el emulador Android). Para otro destino:
 
 ```bash
 flutter run --dart-define=API_URL=http://TU_IP:8080
 ```
-
-> Nota: en emulador Android la base URL por defecto ya funciona (`10.0.2.2` = localhost del host). Para Android físico, usar la IP local de la máquina.
-
 ## Credenciales por defecto
 
 | Rol | Email | Contraseña |
@@ -93,3 +87,9 @@ flutter run --dart-define=API_URL=http://TU_IP:8080
 | Admin | `admin@farmayopin.com` | `admin123` |
 
 Los clientes se registran desde la app.
+
+---
+
+- Facundo Salaberry
+- Ignacio Ortega
+
