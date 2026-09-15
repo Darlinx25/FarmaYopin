@@ -53,7 +53,7 @@ func AddToCart(c *gin.Context) {
 
 	var p models.Product
 	err := db.DB.QueryRow(
-		"SELECT id, name, description, price, stock, image_url FROM products WHERE id = ?",
+		"SELECT id, name, description, price, stock, COALESCE(image_url, '') AS image_url FROM products WHERE id = ?",
 		input.ProductID,
 	).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.ImageURL)
 

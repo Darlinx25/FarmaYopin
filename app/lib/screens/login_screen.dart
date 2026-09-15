@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../api/api_client.dart';
 import '../api/auth_storage.dart';
 import '../services/cart_service.dart';
+import '../services/catalog_service.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
 
@@ -69,6 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
         role: user['role'],
       );
       await CartService.instance.load(user['id'] as int);
+      await CatalogService.instance.load();
       debugPrint('[LOGIN] sesión guardada, navegando a HomeScreen');
 
       if (!mounted) return;

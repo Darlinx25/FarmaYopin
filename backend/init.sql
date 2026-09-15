@@ -43,7 +43,7 @@ INSERT INTO users (name, email, password, role) VALUES
 ('Admin', 'admin@farmayopin.com', '$2a$10$1EEj3/H0winX2.67EM3NH.JXzLffNHyBvy.qdguBQjVaYWS7WngUG', 'admin');
 
 INSERT INTO products (id, name, description, price, stock, image_url) VALUES
-(1, 'Ibuprofeno 400mg', 'Analgésico y antiinflamatorio de uso común. Alivia el dolor leve a moderado y la fiebre.', 450.00, 120, NULL),
-(2, 'Amoxicilina 500mg', 'Antibiótico de amplio espectro indicado para infecciones bacterianas.', 1200.00, 120, NULL),
-(3, 'Paracetamol 1g', 'Analgésico y antipirético para el alivio del dolor y la fiebre.', 350.00, 120, NULL),
-(4, 'Loratadina 10mg', 'Antihistamínico para el alivio de los síntomas de la alergia.', 600.00, 120, NULL);
+(1, 'Ibuprofeno 400mg', 'Analgésico y antiinflamatorio de uso común. Alivia el dolor leve a moderado y la fiebre.', 450.00, 120, ''),
+(2, 'Amoxicilina 500mg', 'Antibiótico de amplio espectro indicado para infecciones bacterianas.', 1200.00, 120, ''),
+(3, 'Paracetamol 1g', 'Analgésico y antipirético para el alivio del dolor y la fiebre.', 350.00, 120, ''),
+(4, 'Loratadina 10mg', 'Antihistamínico para el alivio de los síntomas de la alergia.', 600.00, 120, '');

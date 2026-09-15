@@ -13,7 +13,7 @@ import (
 
 func GetProducts(c *gin.Context) {
 	rows, err := db.DB.Query(
-		"SELECT id, name, description, price, stock, image_url, created_at, updated_at FROM products ORDER BY name",
+		"SELECT id, name, description, price, stock, COALESCE(image_url, '') AS image_url, created_at, updated_at FROM products ORDER BY name",
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al listar productos"})
@@ -43,7 +43,7 @@ func GetProduct(c *gin.Context) {
 
 	var p models.Product
 	err = db.DB.QueryRow(
-		"SELECT id, name, description, price, stock, image_url, created_at, updated_at FROM products WHERE id = ?",
+		"SELECT id, name, description, price, stock, COALESCE(image_url, '') AS image_url, created_at, updated_at FROM products WHERE id = ?",
 		id,
 	).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.ImageURL, &p.CreatedAt, &p.UpdatedAt)
 
