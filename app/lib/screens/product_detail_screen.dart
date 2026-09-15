@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../models/cart_item.dart';
 import '../models/product.dart';
+import '../services/cart_service.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -375,6 +377,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _addToCart(Product product) {
+    CartService.instance.add(
+      CartItem.fromProduct(product, _quantity),
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${product.name} x$_quantity agregado al carrito'),

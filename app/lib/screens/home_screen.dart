@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../api/auth_storage.dart';
+import '../models/cart_item.dart';
 import '../models/product.dart';
+import '../services/cart_service.dart';
 import 'cart_screen.dart';
 import 'login_screen.dart';
 import 'product_detail_screen.dart';
@@ -18,27 +20,27 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _ProductCard {
+  final int id;
   final String name;
   final String price;
 
-  const _ProductCard(this.name, this.price);
+  const _ProductCard(this.id, this.name, this.price);
 }
 
 const _products = [
-  _ProductCard('Ibuprofeno 400mg', r'$450.00'),
-  _ProductCard('Amoxicilina 500mg', r'$1,200.00'),
-  _ProductCard('Paracetamol 1g', r'$350.00'),
-  _ProductCard('Loratadina 10mg', r'$600.00'),
+  _ProductCard(1, 'Ibuprofeno 400mg', r'$450.00'),
+  _ProductCard(2, 'Amoxicilina 500mg', r'$1,200.00'),
+  _ProductCard(3, 'Paracetamol 1g', r'$350.00'),
+  _ProductCard(4, 'Loratadina 10mg', r'$600.00'),
 ];
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _cartCount = 0;
-
   void _go(Widget screen) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
   Future<void> _logout() async {
+    await CartService.instance.reset();
     await AuthStorage.clear();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
@@ -47,8 +49,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  double _priceValue(String formatted) {
+    return double.tryParse(
+      formatted.replaceAll(r'$', '').replaceAll(',', ''),
+    ) ?? 0;
+  }
+
   void _addToCart(_ProductCard product) {
-    setState(() => _cartCount++);
+    CartService.instance.add(
+      CartItem(
+        productId: product.id,
+        name: product.name,
+        price: _priceValue(product.price),
+        quantity: 1,
+        imageUrl: '',
+      ),
+    );
   }
 
   @override
@@ -153,43 +169,49 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               GestureDetector(
                 onTap: () => _go(const CartScreen()),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFD6E9F9),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      const Center(child: Icon(Icons.shopping_bag)),
-                      if (_cartCount > 0)
-                        Positioned(
-                          right: 0,
-                          top: -2,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: ShapeDecoration(
-                              color: const Color(0xFFEF4444),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(9),
-                              ),
-                            ),
-                            child: Text(
-                              '$_cartCount',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
+                child: ListenableBuilder(
+                  listenable: CartService.instance,
+                  builder: (context, _) {
+                    final count = CartService.instance.count;
+                    return Container(
+                      width: 40,
+                      height: 40,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFD6E9F9),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                    ],
-                  ),
+                      ),
+                      child: Stack(
+                        children: [
+                          const Center(child: Icon(Icons.shopping_bag)),
+                          if (count > 0)
+                            Positioned(
+                              right: 0,
+                              top: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: ShapeDecoration(
+                                  color: const Color(0xFFEF4444),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(9),
+                                  ),
+                                ),
+                                child: Text(
+                                  '$count',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -245,14 +267,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openDetail(_ProductCard card) {
-    final priceValue = double.tryParse(
-      card.price.replaceAll(r'$', '').replaceAll(',', ''),
-    ) ?? 0;
     final product = Product(
-      id: 0,
+      id: card.id,
       name: card.name,
       description: 'Analgésico y antiinflamatorio de uso común.',
-      price: priceValue,
+      price: _priceValue(card.price),
       stock: 120,
       imageUrl: '',
     );

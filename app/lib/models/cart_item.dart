@@ -35,5 +35,25 @@ class CartItem {
     );
   }
 
+  factory CartItem.fromMap(Map<String, Object?> map) {
+    return CartItem(
+      productId: map['product_id'] as int,
+      name: map['name'] as String? ?? '',
+      price: (map['price'] as num?)?.toDouble() ?? 0,
+      quantity: map['quantity'] as int? ?? 1,
+      imageUrl: map['image_url'] as String? ?? '',
+    );
+  }
+
+  Map<String, Object?> toMap() {
+    return {
+      'product_id': productId,
+      'name': name,
+      'price': price,
+      'quantity': quantity,
+      'image_url': imageUrl,
+    };
+  }
+
   double get subtotal => price * quantity;
 }

@@ -122,7 +122,10 @@ func UpdateCartItem(c *gin.Context) {
 	}
 
 	var stock int
-	db.DB.QueryRow("SELECT stock FROM products WHERE id = ?", productID).Scan(&stock)
+	if err := db.DB.QueryRow("SELECT stock FROM products WHERE id = ?", productID).Scan(&stock); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Producto no encontrado"})
+		return
+	}
 	if input.Quantity > stock {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Stock insuficiente"})
 		return
@@ -157,68 +160,136 @@ func RemoveFromCart(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Producto eliminado del carrito"})
 }
 
+type checkoutBody struct {
+	Items []struct {
+		ProductID int `json:"product_id"`
+		Quantity  int `json:"quantity"`
+	} `json:"items"`
+}
+
+type checkoutEntry struct {
+	productID int
+	quantity  int
+	price     float64
+}
+
 func Checkout(c *gin.Context) {
 	userID := userIDFromContext(c)
 
+	var body checkoutBody
+	hasBody := c.ShouldBindJSON(&body) == nil && len(body.Items) > 0
+
+	var entries []checkoutEntry
+
 	carts.mu.Lock()
-	items := carts.items[userID]
-	if len(items) == 0 {
-		carts.mu.Unlock()
-		c.JSON(http.StatusBadRequest, gin.H{"error": "El carrito está vacío"})
-		return
+	defer carts.mu.Unlock()
+
+	if hasBody {
+		for _, it := range body.Items {
+			if it.Quantity <= 0 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Cantidad inválida"})
+				return
+			}
+
+			var p models.Product
+			err := db.DB.QueryRow(
+				"SELECT id, price, stock FROM products WHERE id = ?",
+				it.ProductID,
+			).Scan(&p.ID, &p.Price, &p.Stock)
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Producto no encontrado"})
+				return
+			}
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener producto"})
+				return
+			}
+			if it.Quantity > p.Stock {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Stock insuficiente"})
+				return
+			}
+
+			entries = append(entries, checkoutEntry{
+				productID: it.ProductID,
+				quantity:  it.Quantity,
+				price:     p.Price,
+			})
+		}
+	} else {
+		items := carts.items[userID]
+		if len(items) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "El carrito está vacío"})
+			return
+		}
+		for productID, item := range items {
+			entries = append(entries, checkoutEntry{
+				productID: productID,
+				quantity:  item.Quantity,
+				price:     item.Price,
+			})
+		}
 	}
 
 	tx, err := db.DB.Begin()
 	if err != nil {
-		carts.mu.Unlock()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error en la transacción"})
 		return
 	}
 
 	var total float64
-	for _, item := range items {
-		total += item.Subtotal
+	for _, e := range entries {
+		total += e.price * float64(e.quantity)
 	}
 
 	result, err := tx.Exec("INSERT INTO sales (user_id, total) VALUES (?, ?)", userID, total)
 	if err != nil {
 		tx.Rollback()
-		carts.mu.Unlock()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo crear la venta"})
 		return
 	}
 
 	saleID, _ := result.LastInsertId()
 
-	for _, item := range items {
+	for _, e := range entries {
+		var stock int
+		if err := tx.QueryRow(
+			"SELECT stock FROM products WHERE id = ? FOR UPDATE",
+			e.productID,
+		).Scan(&stock); err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo verificar el stock"})
+			return
+		}
+		if stock < e.quantity {
+			tx.Rollback()
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Stock insuficiente"})
+			return
+		}
+
 		_, err := tx.Exec(
 			"INSERT INTO sale_items (sale_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)",
-			saleID, item.ProductID, item.Quantity, item.Price,
+			saleID, e.productID, e.quantity, e.price,
 		)
 		if err != nil {
 			tx.Rollback()
-			carts.mu.Unlock()
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo guardar el detalle de la venta"})
 			return
 		}
 
-		_, err = tx.Exec("UPDATE products SET stock = stock - ? WHERE id = ?", item.Quantity, item.ProductID)
+		_, err = tx.Exec("UPDATE products SET stock = stock - ? WHERE id = ?", e.quantity, e.productID)
 		if err != nil {
 			tx.Rollback()
-			carts.mu.Unlock()
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo actualizar el stock"})
 			return
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		carts.mu.Unlock()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al confirmar la compra"})
 		return
 	}
 
 	delete(carts.items, userID)
-	carts.mu.Unlock()
 
 	c.JSON(http.StatusOK, gin.H{"message": "Compra realizada", "sale_id": saleID, "total": total})
 }

@@ -2,6 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../api/api_client.dart';
+import '../models/cart_item.dart';
+import '../services/cart_service.dart';
+
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -9,22 +13,8 @@ class CartScreen extends StatefulWidget {
   State<CartScreen> createState() => _CartScreenState();
 }
 
-class _Item {
-  final String name;
-  final double price;
-  int qty;
-
-  _Item(this.name, this.price, this.qty);
-}
-
 class _CartScreenState extends State<CartScreen> {
-  final _items = [
-    _Item('Ibuprofeno 400mg', 450, 2),
-    _Item('Amoxicilina 500mg', 1200, 1),
-  ];
-
-  double get _total =>
-      _items.fold(0, (sum, item) => sum + (item.price * item.qty));
+  bool _checking = false;
 
   String _money(double value) {
     final fixed = value.toStringAsFixed(2);
@@ -38,84 +28,124 @@ class _CartScreenState extends State<CartScreen> {
     return '\$${buffer.toString()}.${parts[1]}';
   }
 
-  void _incQty(_Item item, int delta) {
-    setState(() {
-      item.qty = max(1, item.qty + delta);
-    });
-  }
+  Future<void> _checkout() async {
+    final items = CartService.instance.items;
+    if (items.isEmpty || _checking) return;
 
-  void _remove(_Item item) {
-    setState(() => _items.remove(item));
+    setState(() => _checking = true);
+    try {
+      await ApiClient.post(
+        '/api/cart/checkout',
+        body: {
+          'items': items
+              .map(
+                (i) => {'product_id': i.productId, 'quantity': i.quantity},
+              )
+              .toList(),
+        },
+      );
+      await CartService.instance.clear();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compra realizada con éxito')),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo procesar la compra'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _checking = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final height = max(constraints.maxHeight, 720.0);
-        return Scaffold(
-          backgroundColor: const Color(0xFFFAFAF9),
-          body: SingleChildScrollView(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Container(
-                  width: double.infinity,
-                  height: height,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: const ShapeDecoration(
-                    color: Color(0xFFFAFAF9),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(40)),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildHeader(),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: 12,
-                              children: [
-                                if (_items.isEmpty)
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 80),
-                                    child: Column(
-                                      children: [
-                                        Icon(
-                                          Icons.shopping_cart_outlined,
-                                          size: 56,
-                                          color: Color(0xFF9CA3AF),
-                                        ),
-                                        SizedBox(height: 12),
-                                        Text(
-                                          'Tu carrito está vacío',
-                                          style: TextStyle(
-                                            color: Color(0xFF4B5563),
-                                            fontSize: 14,
-                                            fontFamily: 'Work Sans',
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                else
-                                  ..._items.map(_cartItem),
-                              ],
-                            ),
-                          ),
+    return ListenableBuilder(
+      listenable: CartService.instance,
+      builder: (context, _) {
+        final items = CartService.instance.items;
+        final total = CartService.instance.total;
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final height = max(constraints.maxHeight, 720.0);
+            return Scaffold(
+              backgroundColor: const Color(0xFFFAFAF9),
+              body: SingleChildScrollView(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Container(
+                      width: double.infinity,
+                      height: height,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: const ShapeDecoration(
+                        color: Color(0xFFFAFAF9),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(40)),
                         ),
                       ),
-                      _buildFooter(),
-                    ],
+                      child: Column(
+                        children: [
+                          _buildHeader(),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  spacing: 12,
+                                  children: [
+                                    if (items.isEmpty)
+                                      const Padding(
+                                        padding: EdgeInsets.only(top: 80),
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              Icons.shopping_cart_outlined,
+                                              size: 56,
+                                              color: Color(0xFF9CA3AF),
+                                            ),
+                                            SizedBox(height: 12),
+                                            Text(
+                                              'Tu carrito está vacío',
+                                              style: TextStyle(
+                                                color: Color(0xFF4B5563),
+                                                fontSize: 14,
+                                                fontFamily: 'Work Sans',
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    else
+                                      ...items.map(_cartItem),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          _buildFooter(total: total, enabled: items.isNotEmpty),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
@@ -154,7 +184,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _cartItem(_Item item) {
+  Widget _cartItem(CartItem item) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -213,7 +243,10 @@ class _CartScreenState extends State<CartScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
                       decoration: ShapeDecoration(
                         color: const Color(0xFFFAFAF9),
                         shape: RoundedRectangleBorder(
@@ -227,10 +260,10 @@ class _CartScreenState extends State<CartScreen> {
                             icon: const Icon(Icons.remove, size: 16),
                             visualDensity: VisualDensity.compact,
                             color: const Color(0xFF1E47EB),
-                            onPressed: () => _incQty(item, -1),
+                            onPressed: () => _decrease(item),
                           ),
                           Text(
-                            '${item.qty}',
+                            '${item.quantity}',
                             style: const TextStyle(
                               color: Color(0xFF1E47EB),
                               fontSize: 13,
@@ -243,7 +276,7 @@ class _CartScreenState extends State<CartScreen> {
                             icon: const Icon(Icons.add, size: 16),
                             visualDensity: VisualDensity.compact,
                             color: const Color(0xFF1E47EB),
-                            onPressed: () => _incQty(item, 1),
+                            onPressed: () => _increase(item),
                           ),
                         ],
                       ),
@@ -253,7 +286,9 @@ class _CartScreenState extends State<CartScreen> {
                       color: const Color(0xFFEF4444),
                       visualDensity: VisualDensity.compact,
                       tooltip: 'Quitar',
-                      onPressed: () => _remove(item),
+                      onPressed: () => CartService.instance.remove(
+                        item.productId,
+                      ),
                     ),
                   ],
                 ),
@@ -265,7 +300,19 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildFooter() {
+  void _increase(CartItem item) {
+    CartService.instance.updateQuantity(item.productId, item.quantity + 1);
+  }
+
+  void _decrease(CartItem item) {
+    if (item.quantity <= 1) {
+      CartService.instance.remove(item.productId);
+    } else {
+      CartService.instance.updateQuantity(item.productId, item.quantity - 1);
+    }
+  }
+
+  Widget _buildFooter({required double total, required bool enabled}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -295,7 +342,7 @@ class _CartScreenState extends State<CartScreen> {
               ),
               Flexible(
                 child: Text(
-                  _money(_total),
+                  _money(total),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -319,31 +366,34 @@ class _CartScreenState extends State<CartScreen> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Completando la compra (próximamente)'),
-                  ),
-                );
-              },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 8,
-                children: [
-                  Icon(Icons.payment, color: Colors.white, size: 18),
-                  Text(
-                    'Pagar',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontFamily: 'Work Sans',
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: -0.26,
+              onPressed: enabled && !_checking ? _checkout : null,
+              child: _checking
+                  ? const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 8,
+                      children: [
+                        Icon(Icons.payment, color: Colors.white, size: 18),
+                        Text(
+                          'Pagar',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontFamily: 'Work Sans',
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: -0.26,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
         ],
