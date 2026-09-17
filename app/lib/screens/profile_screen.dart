@@ -19,6 +19,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String _name = '';
   String _email = '';
+  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -29,10 +30,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUser() async {
     final name = await AuthStorage.getName();
     final email = await AuthStorage.getEmail();
+    final role = await AuthStorage.getRole();
     if (!mounted) return;
     setState(() {
       _name = name ?? '';
       _email = email ?? '';
+      _isAdmin = role == 'admin';
     });
   }
 
@@ -260,6 +263,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildBottomNav() {
+    if (_isAdmin) return _buildAdminBottomNav();
+    return _buildClientBottomNav();
+  }
+
+  Widget _buildClientBottomNav() {
     return Container(
       width: double.infinity,
       height: 60,
@@ -294,6 +302,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
               label: 'Mis Compras',
               active: false,
               onTap: () => _go(const PurchasesScreen()),
+            ),
+          ),
+          Expanded(
+            child: _navItem(
+              icon: Icons.person,
+              label: 'Perfil',
+              active: true,
+              onTap: () {},
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdminBottomNav() {
+    return Container(
+      width: double.infinity,
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: const ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _navItem(
+              icon: Icons.inventory_2_outlined,
+              label: 'Productos',
+              active: false,
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ),
+          Expanded(
+            child: _navItem(
+              icon: Icons.history,
+              label: 'Historial',
+              active: false,
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'El historial de ventas estará disponible pronto.',
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           Expanded(
