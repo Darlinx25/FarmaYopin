@@ -6,6 +6,7 @@ import '../api/api_client.dart';
 import '../api/auth_storage.dart';
 import '../services/cart_service.dart';
 import '../services/catalog_service.dart';
+import 'admin/admin_product_list_screen.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
 
@@ -71,11 +72,16 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       await CartService.instance.load(user['id'] as int);
       await CatalogService.instance.load();
-      debugPrint('[LOGIN] sesión guardada, navegando a HomeScreen');
+      debugPrint('[LOGIN] sesión guardada, navegando por rol: ${user['role']}');
 
       if (!mounted) return;
+      final isAdmin = user['role'] == 'admin';
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (_) => isAdmin
+              ? const AdminProductListScreen()
+              : const HomeScreen(),
+        ),
       );
     } on ApiException catch (e) {
       debugPrint('[LOGIN] ApiException: ${e.message}');
