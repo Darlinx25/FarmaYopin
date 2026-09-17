@@ -12,9 +12,14 @@ import (
 )
 
 func GetProducts(c *gin.Context) {
-	rows, err := db.DB.Query(
-		"SELECT id, name, description, price, stock, COALESCE(image_url, '') AS image_url, created_at, updated_at FROM products ORDER BY name",
-	)
+	query := "SELECT id, name, description, price, stock, COALESCE(image_url, '') AS image_url, available, created_at, updated_at FROM products"
+	role, _ := c.Get("role")
+	if role != "admin" {
+		query += " WHERE available = 1"
+	}
+	query += " ORDER BY name"
+
+	rows, err := db.DB.Query(query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al listar productos"})
 		return
@@ -24,7 +29,7 @@ func GetProducts(c *gin.Context) {
 	var products []models.Product
 	for rows.Next() {
 		var p models.Product
-		if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.ImageURL, &p.CreatedAt, &p.UpdatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.ImageURL, &p.Available, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al leer productos"})
 			return
 		}
@@ -42,10 +47,12 @@ func GetProduct(c *gin.Context) {
 	}
 
 	var p models.Product
-	err = db.DB.QueryRow(
-		"SELECT id, name, description, price, stock, COALESCE(image_url, '') AS image_url, created_at, updated_at FROM products WHERE id = ?",
-		id,
-	).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.ImageURL, &p.CreatedAt, &p.UpdatedAt)
+	query := "SELECT id, name, description, price, stock, COALESCE(image_url, '') AS image_url, available, created_at, updated_at FROM products WHERE id = ?"
+	role, _ := c.Get("role")
+	if role != "admin" {
+		query += " AND available = 1"
+	}
+	err = db.DB.QueryRow(query, id).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.ImageURL, &p.Available, &p.CreatedAt, &p.UpdatedAt)
 
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Producto no encontrado"})
@@ -67,8 +74,8 @@ func CreateProduct(c *gin.Context) {
 	}
 
 	result, err := db.DB.Exec(
-		"INSERT INTO products (name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?)",
-		input.Name, input.Description, input.Price, input.Stock, input.ImageURL,
+		"INSERT INTO products (name, description, price, stock, image_url, available) VALUES (?, ?, ?, ?, ?, ?)",
+		input.Name, input.Description, input.Price, input.Stock, input.ImageURL, input.Available,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo crear el producto"})
@@ -93,8 +100,8 @@ func UpdateProduct(c *gin.Context) {
 	}
 
 	result, err := db.DB.Exec(
-		"UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image_url = ? WHERE id = ?",
-		input.Name, input.Description, input.Price, input.Stock, input.ImageURL, id,
+		"UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image_url = ?, available = ? WHERE id = ?",
+		input.Name, input.Description, input.Price, input.Stock, input.ImageURL, input.Available, id,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo actualizar el producto"})

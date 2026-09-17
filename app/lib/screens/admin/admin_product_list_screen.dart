@@ -277,7 +277,19 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
   }
 
   Widget _productCard(Product product) {
-    final available = product.stock > 0;
+    final inStock = product.stock > 0;
+    final String status;
+    final Color statusColor;
+    if (!product.available) {
+      status = 'No disponible';
+      statusColor = const Color(0xFF4B5563);
+    } else if (inStock) {
+      status = 'Disponible';
+      statusColor = const Color(0xFF10B981);
+    } else {
+      status = 'Agotado';
+      statusColor = const Color(0xFFEF4444);
+    }
     return GestureDetector(
       onTap: () => _go(AdminProductViewScreen(product: product)),
       child: Container(
@@ -336,11 +348,9 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
                     ),
                   ),
                   Text(
-                    available ? 'Disponible' : 'Agotado',
+                    status,
                     style: TextStyle(
-                      color: available
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444),
+                      color: statusColor,
                       fontSize: 11,
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.w600,

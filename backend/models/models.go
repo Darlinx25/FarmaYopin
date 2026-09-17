@@ -29,6 +29,7 @@ type Product struct {
 	Price       float64   `json:"price"`
 	Stock       int       `json:"stock"`
 	ImageURL    string    `json:"image_url"`
+	Available   bool      `json:"available"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -39,6 +40,7 @@ type CreateProductInput struct {
 	Price       float64 `json:"price" binding:"required,gt=0"`
 	Stock       int     `json:"stock" binding:"gte=0"`
 	ImageURL    string  `json:"image_url"`
+	Available   bool    `json:"available"`
 }
 
 type CartItem struct {
