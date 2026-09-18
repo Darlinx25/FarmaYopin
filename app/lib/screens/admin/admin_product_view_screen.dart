@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../models/product.dart';
+import 'admin_edit_product_screen.dart';
 import 'admin_product_history_screen.dart';
 
 class AdminProductViewScreen extends StatelessWidget {
@@ -284,7 +285,13 @@ class AdminProductViewScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              onPressed: null,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AdminEditProductScreen(product: product),
+                  ),
+                );
+              },
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
