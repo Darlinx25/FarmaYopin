@@ -8,6 +8,7 @@ import '../services/catalog_service.dart';
 import 'cart_screen.dart';
 import 'login_screen.dart';
 import 'purchase_history_screen.dart';
+import 'admin/admin_product_history_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -343,15 +344,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.history,
               label: 'Historial',
               active: false,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'El historial de ventas estará disponible pronto.',
-                    ),
-                  ),
-                );
-              },
+              onTap: () => _go(const AdminProductHistoryScreen()),
             ),
           ),
           Expanded(

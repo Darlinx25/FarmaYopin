@@ -41,6 +41,7 @@ func main() {
 			admin.POST("/products", handlers.CreateProduct)
 			admin.PUT("/products/:id", handlers.UpdateProduct)
 			admin.DELETE("/products/:id", handlers.DeleteProduct)
+			admin.GET("/history", handlers.GetHistory)
 		}
 
 		api.GET("/cart", handlers.GetCart)

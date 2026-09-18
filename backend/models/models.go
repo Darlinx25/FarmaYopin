@@ -78,7 +78,9 @@ type PurchaseItem struct {
 }
 
 type ProductHistoryItem struct {
-	Date      time.Time `json:"date"`
-	Quantity  int       `json:"quantity"`
-	Client    string    `json:"client"`
+	Date     time.Time `json:"date"`
+	Quantity int       `json:"quantity"`
+	Client   string    `json:"client"`
+	Product  string    `json:"product"`
+	Amount   float64   `json:"amount"`
 }

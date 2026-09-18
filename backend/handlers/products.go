@@ -147,10 +147,11 @@ func GetProductHistory(c *gin.Context) {
 	}
 
 	rows, err := db.DB.Query(`
-		SELECT s.created_at, si.quantity, u.name
+		SELECT s.created_at, si.quantity, u.name, p.name, si.unit_price * si.quantity
 		FROM sale_items si
 		JOIN sales s ON s.id = si.sale_id
 		JOIN users u ON u.id = s.user_id
+		JOIN products p ON p.id = si.product_id
 		WHERE si.product_id = ?
 		ORDER BY s.created_at DESC`,
 		id,
@@ -164,7 +165,35 @@ func GetProductHistory(c *gin.Context) {
 	var history []models.ProductHistoryItem
 	for rows.Next() {
 		var h models.ProductHistoryItem
-		if err := rows.Scan(&h.Date, &h.Quantity, &h.Client); err != nil {
+		if err := rows.Scan(&h.Date, &h.Quantity, &h.Client, &h.Product, &h.Amount); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al leer historial"})
+			return
+		}
+		history = append(history, h)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": history})
+}
+
+func GetHistory(c *gin.Context) {
+	rows, err := db.DB.Query(`
+		SELECT s.created_at, si.quantity, u.name, p.name, si.unit_price * si.quantity
+		FROM sale_items si
+		JOIN sales s ON s.id = si.sale_id
+		JOIN users u ON u.id = s.user_id
+		JOIN products p ON p.id = si.product_id
+		ORDER BY s.created_at DESC`,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener historial"})
+		return
+	}
+	defer rows.Close()
+
+	var history []models.ProductHistoryItem
+	for rows.Next() {
+		var h models.ProductHistoryItem
+		if err := rows.Scan(&h.Date, &h.Quantity, &h.Client, &h.Product, &h.Amount); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al leer historial"})
 			return
 		}
