@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../api/auth_storage.dart';
+import '../services/card_service.dart';
 import '../services/cart_service.dart';
 import '../services/catalog_service.dart';
 import 'cart_screen.dart';
@@ -42,6 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _logout() async {
     await CartService.instance.reset();
+    await CardService.instance.reset();
     await CatalogService.instance.reset();
     await AuthStorage.clear();
     if (!mounted) return;

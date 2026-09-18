@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
 import '../api/auth_storage.dart';
+import '../services/card_service.dart';
 import '../services/cart_service.dart';
 import '../services/catalog_service.dart';
 import 'admin/admin_product_list_screen.dart';
@@ -71,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
         role: user['role'],
       );
       await CartService.instance.load(user['id'] as int);
+      await CardService.instance.load(user['id'] as int);
       await CatalogService.instance.load();
       debugPrint('[LOGIN] sesión guardada, navegando por rol: ${user['role']}');
 
@@ -116,7 +118,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Column(
                     children: [
-                      _statusBar(),
                       Expanded(
                         child: SingleChildScrollView(
                           child: Center(
@@ -148,34 +149,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _statusBar() {
-    return Container(
-      width: double.infinity,
-      height: 44,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '10:47',
-            style: TextStyle(
-              color: Color(0xFF1E47EB),
-              fontSize: 14,
-              fontFamily: 'Work Sans',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Spacer(),
-          Icon(Icons.signal_cellular_alt, color: Color(0xFF1E47EB), size: 18),
-          SizedBox(width: 8),
-          Icon(Icons.wifi, color: Color(0xFF1E47EB), size: 18),
-          SizedBox(width: 8),
-          Icon(Icons.battery_full, color: Color(0xFF1E47EB), size: 18),
-        ],
-      ),
     );
   }
 

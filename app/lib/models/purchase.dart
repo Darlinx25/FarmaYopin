@@ -1,12 +1,16 @@
 class Purchase {
   final int id;
   final double total;
+  final String paymentMethod;
+  final String cardLast4;
   final DateTime date;
   final List<PurchaseItem> items;
 
   Purchase({
     required this.id,
     required this.total,
+    required this.paymentMethod,
+    required this.cardLast4,
     required this.date,
     required this.items,
   });
@@ -15,6 +19,8 @@ class Purchase {
     return Purchase(
       id: json['id'],
       total: (json['total'] ?? 0).toDouble(),
+      paymentMethod: json['payment_method'] ?? 'cash',
+      cardLast4: json['card_last4'] ?? '',
       date: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       items: (json['items'] as List? ?? [])
           .map((e) => PurchaseItem.fromJson(e))
@@ -28,13 +34,17 @@ class PurchaseItem {
   final String name;
   final int quantity;
   final double unitPrice;
+  final String imageUrl;
 
   PurchaseItem({
     required this.productId,
     required this.name,
     required this.quantity,
     required this.unitPrice,
+    required this.imageUrl,
   });
+
+  double get subtotal => unitPrice * quantity;
 
   factory PurchaseItem.fromJson(Map<String, dynamic> json) {
     return PurchaseItem(
@@ -42,6 +52,7 @@ class PurchaseItem {
       name: json['name'] ?? '',
       quantity: json['quantity'] ?? 0,
       unitPrice: (json['unit_price'] ?? 0).toDouble(),
+      imageUrl: json['image_url'] ?? '',
     );
   }
 }

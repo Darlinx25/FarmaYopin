@@ -165,6 +165,8 @@ type checkoutBody struct {
 		ProductID int `json:"product_id"`
 		Quantity  int `json:"quantity"`
 	} `json:"items"`
+	PaymentMethod string `json:"payment_method"`
+	CardLast4     string `json:"card_last4"`
 }
 
 type checkoutEntry struct {
@@ -241,7 +243,22 @@ func Checkout(c *gin.Context) {
 		total += e.price * float64(e.quantity)
 	}
 
-	result, err := tx.Exec("INSERT INTO sales (user_id, total) VALUES (?, ?)", userID, total)
+	paymentMethod := body.PaymentMethod
+	if paymentMethod != "card" && paymentMethod != "cash" {
+		paymentMethod = "cash"
+	}
+	cardLast4 := ""
+	if paymentMethod == "card" {
+		cardLast4 = body.CardLast4
+		if len(cardLast4) > 4 {
+			cardLast4 = cardLast4[len(cardLast4)-4:]
+		}
+	}
+
+	result, err := tx.Exec(
+		"INSERT INTO sales (user_id, total, payment_method, card_last4) VALUES (?, ?, ?, ?)",
+		userID, total, paymentMethod, cardLast4,
+	)
 	if err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo crear la venta"})

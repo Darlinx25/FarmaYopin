@@ -41,4 +41,32 @@ func Connect() {
 	DB.SetMaxOpenConns(10)
 	DB.SetMaxIdleConns(5)
 	log.Println("Base de datos conectada")
+
+	migrate()
+}
+
+func migrate() {
+	var count int
+	err := DB.QueryRow(`
+		SELECT COUNT(*) FROM information_schema.columns
+		WHERE table_schema = DATABASE() AND table_name = 'sales' AND column_name = 'payment_method'
+	`).Scan(&count)
+	if err != nil {
+		log.Println("No se pudo verificar migraciones:", err)
+		return
+	}
+
+	if count == 0 {
+		if _, err := DB.Exec(
+			"ALTER TABLE sales ADD COLUMN payment_method VARCHAR(20) NOT NULL DEFAULT 'cash' AFTER total",
+		); err != nil {
+			log.Fatal("No se pudo agregar payment_method:", err)
+		}
+		if _, err := DB.Exec(
+			"ALTER TABLE sales ADD COLUMN card_last4 VARCHAR(4) NOT NULL DEFAULT '' AFTER payment_method",
+		); err != nil {
+			log.Fatal("No se pudo agregar card_last4:", err)
+		}
+		log.Println("Migración sales (payment_method, card_last4) aplicada")
+	}
 }

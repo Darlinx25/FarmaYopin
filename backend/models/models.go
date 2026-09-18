@@ -63,10 +63,12 @@ type CartUpdateInput struct {
 }
 
 type Purchase struct {
-	ID        int          `json:"id"`
-	Total     float64      `json:"total"`
-	CreatedAt time.Time    `json:"created_at"`
-	Items     []PurchaseItem `json:"items"`
+	ID            int            `json:"id"`
+	Total         float64        `json:"total"`
+	PaymentMethod string         `json:"payment_method"`
+	CardLast4     string         `json:"card_last4"`
+	CreatedAt     time.Time      `json:"created_at"`
+	Items         []PurchaseItem `json:"items"`
 }
 
 type PurchaseItem struct {
@@ -75,6 +77,7 @@ type PurchaseItem struct {
 	Quantity  int     `json:"quantity"`
 	UnitPrice float64 `json:"unit_price"`
 	Subtotal  float64 `json:"subtotal"`
+	ImageURL  string  `json:"image_url"`
 }
 
 type ProductHistoryItem struct {

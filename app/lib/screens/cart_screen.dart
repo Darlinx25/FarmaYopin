@@ -2,9 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../api/api_client.dart';
 import '../models/cart_item.dart';
+import '../models/payment_method.dart';
 import '../services/cart_service.dart';
+import 'payment_options_screen.dart';
+import 'payment_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -14,8 +16,6 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  bool _checking = false;
-
   String _money(double value) {
     final fixed = value.toStringAsFixed(2);
     final parts = fixed.split('.');
@@ -28,46 +28,18 @@ class _CartScreenState extends State<CartScreen> {
     return '\$${buffer.toString()}.${parts[1]}';
   }
 
-  Future<void> _checkout() async {
-    final items = CartService.instance.items;
-    if (items.isEmpty || _checking) return;
-
-    setState(() => _checking = true);
-    try {
-      await ApiClient.post(
-        '/api/cart/checkout',
-        body: {
-          'items': items
-              .map(
-                (i) => {'product_id': i.productId, 'quantity': i.quantity},
-              )
-              .toList(),
-        },
-      );
-      await CartService.instance.clear();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compra realizada con éxito')),
-      );
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo procesar la compra'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _checking = false);
-    }
+  Future<void> _goToPayment() async {
+    if (CartService.instance.isEmpty) return;
+    final navigator = Navigator.of(context);
+    final selection = await navigator.push<PaymentSelection>(
+      MaterialPageRoute(builder: (_) => const PaymentOptionsScreen()),
+    );
+    if (selection == null || !mounted) return;
+    await navigator.push(
+      MaterialPageRoute(
+        builder: (_) => PaymentScreen(selection: selection),
+      ),
+    );
   }
 
   @override
@@ -366,34 +338,25 @@ class _CartScreenState extends State<CartScreen> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              onPressed: enabled && !_checking ? _checkout : null,
-              child: _checking
-                  ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 8,
-                      children: [
-                        Icon(Icons.payment, color: Colors.white, size: 18),
-                        Text(
-                          'Pagar',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontFamily: 'Work Sans',
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: -0.26,
-                          ),
-                        ),
-                      ],
+              onPressed: enabled ? _goToPayment : null,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  Icon(Icons.payment, color: Colors.white, size: 18),
+                  Text(
+                    'Pagar',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontFamily: 'Work Sans',
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: -0.26,
                     ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

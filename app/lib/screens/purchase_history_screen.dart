@@ -7,6 +7,7 @@ import '../api/api_client.dart';
 import '../models/purchase.dart';
 import 'cart_screen.dart';
 import 'profile_screen.dart';
+import 'purchase_detail_screen.dart';
 
 class PurchasesScreen extends StatefulWidget {
   const PurchasesScreen({super.key});
@@ -224,89 +225,92 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
   }
 
   Widget _buildCard(Purchase purchase) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(color: Color(0xFFE5E7EB)),
-          borderRadius: BorderRadius.circular(16),
+    return GestureDetector(
+      onTap: () => _go(PurchaseDetailScreen(purchase: purchase)),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: ShapeDecoration(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: Color(0xFFE5E7EB)),
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 12,
-        children: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 6,
-            children: [
-              const Text(
-                'Medicamentos',
-                style: TextStyle(
-                  color: Color(0xFF9CA3AF),
-                  fontSize: 11,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                _itemsSummary(purchase),
-                style: const TextStyle(
-                  color: Color(0xFF4B5563),
-                  fontSize: 13,
-                  fontFamily: 'Work Sans',
-                  fontWeight: FontWeight.w400,
-                  letterSpacing: -0.26,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                _formatDate(purchase.date),
-                style: const TextStyle(
-                  color: Color(0xFF9CA3AF),
-                  fontSize: 12,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Total:',
-                    style: TextStyle(
-                      color: Color(0xFF4B5563),
-                      fontSize: 12,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w400,
-                    ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 12,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 6,
+              children: [
+                const Text(
+                  'Medicamentos',
+                  style: TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 11,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _formatMoney(purchase.total),
-                    style: const TextStyle(
-                      color: Color(0xFF1E47EB),
-                      fontSize: 13,
-                      fontFamily: 'Work Sans',
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: -0.26,
-                    ),
+                ),
+                Text(
+                  _itemsSummary(purchase),
+                  style: const TextStyle(
+                    color: Color(0xFF4B5563),
+                    fontSize: 13,
+                    fontFamily: 'Work Sans',
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.26,
                   ),
-                ],
-              ),
-            ],
-          ),
-        ],
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  _formatDate(purchase.date),
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 12,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Total:',
+                      style: TextStyle(
+                        color: Color(0xFF4B5563),
+                        fontSize: 12,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatMoney(purchase.total),
+                      style: const TextStyle(
+                        color: Color(0xFF1E47EB),
+                        fontSize: 13,
+                        fontFamily: 'Work Sans',
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: -0.26,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
