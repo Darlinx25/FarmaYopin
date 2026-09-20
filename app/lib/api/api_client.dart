@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 import 'auth_storage.dart';
 
@@ -107,5 +108,38 @@ class ApiClient {
         ? data['error'] as String
         : 'Error inesperado (${res.statusCode})';
     throw ApiException(message, statusCode: res.statusCode);
+  }
+
+  static Future<String> uploadImage(XFile file) async {
+    final uri = Uri.parse('$baseUrl/api/uploads/image');
+    final request = http.MultipartRequest('POST', uri);
+    final token = await AuthStorage.getToken();
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'image',
+        await file.readAsBytes(),
+        filename: file.name,
+      ),
+    );
+    debugPrint('[API] POST $uri (imagen)');
+    http.Response res;
+    try {
+      final streamed = await request.send().timeout(_timeout);
+      res = await http.Response.fromStream(streamed).timeout(_timeout);
+    } on TimeoutException {
+      throw ApiException('El servidor no respondió a tiempo');
+    } on SocketException {
+      throw ApiException('No se pudo conectar con el servidor');
+    }
+    final data = _handle(res);
+    return (data as Map<String, dynamic>)['image_url'] as String;
+  }
+
+  static String resolveImageUrl(String url) {
+    if (url.isEmpty || url.startsWith('http')) return url;
+    return '$baseUrl$url';
   }
 }

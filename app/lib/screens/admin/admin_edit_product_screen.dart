@@ -93,6 +93,10 @@ class _AdminEditProductScreenState extends State<AdminEditProductScreen> {
     setState(() => _loading = true);
     try {
       debugPrint('[ADMIN-PRODUCT] actualizando producto: ${widget.product.id}');
+      String imageUrl = widget.product.imageUrl;
+      if (_image != null) {
+        imageUrl = await ApiClient.uploadImage(_image!);
+      }
       await ApiClient.put(
         '/api/products/${widget.product.id}',
         body: {
@@ -100,7 +104,7 @@ class _AdminEditProductScreenState extends State<AdminEditProductScreen> {
           'description': description,
           'price': price,
           'stock': stock,
-          'image_url': widget.product.imageUrl,
+          'image_url': imageUrl,
           'available': _disponible,
         },
       );
@@ -295,7 +299,7 @@ class _AdminEditProductScreenState extends State<AdminEditProductScreen> {
         fit: StackFit.expand,
         children: [
           Image.network(
-            widget.product.imageUrl,
+            ApiClient.resolveImageUrl(widget.product.imageUrl),
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) => const Icon(
               Icons.medication,
@@ -330,15 +334,6 @@ class _AdminEditProductScreenState extends State<AdminEditProductScreen> {
             fontFamily: 'Work Sans',
             fontWeight: FontWeight.w400,
             letterSpacing: -0.26,
-          ),
-        ),
-        Text(
-          'Solo se previsualiza localmente',
-          style: TextStyle(
-            color: Color(0xFF9CA3AF),
-            fontSize: 11,
-            fontFamily: 'Work Sans',
-            fontWeight: FontWeight.w400,
           ),
         ),
       ],

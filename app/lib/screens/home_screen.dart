@@ -3,11 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../api/auth_storage.dart';
+import '../api/api_client.dart';
 import '../models/cart_item.dart';
 import '../models/product.dart';
 import '../services/card_service.dart';
 import '../services/cart_service.dart';
 import '../services/catalog_service.dart';
+import '../services/purchase_service.dart';
 import 'cart_screen.dart';
 import 'login_screen.dart';
 import 'product_detail_screen.dart';
@@ -49,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _logout() async {
     await CartService.instance.reset();
     await CardService.instance.reset();
+    await PurchaseService.instance.reset();
     await CatalogService.instance.reset();
     await AuthStorage.clear();
     if (!mounted) return;
@@ -389,11 +392,22 @@ class _HomeScreenState extends State<HomeScreen> {
               width: double.infinity,
               child: Container(
                 color: const Color(0xFFD6E9F9),
-                child: const Icon(
-                  Icons.medication,
-                  color: Color(0xFF1E47EB),
-                  size: 42,
-                ),
+                child: product.imageUrl.isEmpty
+                    ? const Icon(
+                        Icons.medication,
+                        color: Color(0xFF1E47EB),
+                        size: 42,
+                      )
+                    : Image.network(
+                        ApiClient.resolveImageUrl(product.imageUrl),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                          Icons.medication,
+                          color: Color(0xFF1E47EB),
+                          size: 42,
+                        ),
+                      ),
               ),
             ),
             Padding(

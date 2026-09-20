@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../api/api_client.dart';
 import '../models/cart_item.dart';
 import '../models/payment_method.dart';
 import '../services/cart_service.dart';
@@ -172,17 +173,29 @@ class _CartScreenState extends State<CartScreen> {
           Container(
             width: 60,
             height: 60,
+            clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
               color: const Color(0xFFD6E9F9),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Icon(
-              Icons.medication,
-              color: Color(0xFF1E47EB),
-              size: 28,
-            ),
+            child: item.imageUrl.isEmpty
+                ? const Icon(
+                    Icons.medication,
+                    color: Color(0xFF1E47EB),
+                    size: 28,
+                  )
+                : Image.network(
+                    ApiClient.resolveImageUrl(item.imageUrl),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(
+                      Icons.medication,
+                      color: Color(0xFF1E47EB),
+                      size: 28,
+                    ),
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(

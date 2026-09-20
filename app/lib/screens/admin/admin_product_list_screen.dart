@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../api/api_client.dart';
 import '../../models/product.dart';
 import '../../services/catalog_service.dart';
 import '../profile_screen.dart';
@@ -308,17 +309,29 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
             Container(
               width: 64,
               height: 64,
+              clipBehavior: Clip.antiAlias,
               decoration: ShapeDecoration(
                 color: const Color(0xFFD6E9F9),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: const Icon(
-                Icons.medication,
-                color: Color(0xFF1E47EB),
-                size: 28,
-              ),
+              child: product.imageUrl.isEmpty
+                  ? const Icon(
+                      Icons.medication,
+                      color: Color(0xFF1E47EB),
+                      size: 28,
+                    )
+                  : Image.network(
+                      ApiClient.resolveImageUrl(product.imageUrl),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(
+                        Icons.medication,
+                        color: Color(0xFF1E47EB),
+                        size: 28,
+                      ),
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(

@@ -265,7 +265,7 @@ class _AdminProductHistoryScreenState extends State<AdminProductHistoryScreen> {
                     size: 20,
                   )
                 : Image.network(
-                    product.imageUrl,
+                    ApiClient.resolveImageUrl(product.imageUrl),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.medication,

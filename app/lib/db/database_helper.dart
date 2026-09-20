@@ -11,7 +11,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const _dbName = 'farmayopin.db';
-  static const _dbVersion = 3;
+  static const _dbVersion = 4;
 
   Database? _db;
 
@@ -52,6 +52,8 @@ class DatabaseHelper {
       )
     ''');
     await db.execute(_cardsTable);
+    await db.execute(_purchasesTable);
+    await db.execute(_purchaseItemsTable);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -75,6 +77,9 @@ class DatabaseHelper {
       ''');
       await db.execute('DROP TABLE cards');
       await db.execute('ALTER TABLE cards_new RENAME TO cards');
+    } else if (oldVersion < 4) {
+      await db.execute(_purchasesTable);
+      await db.execute(_purchaseItemsTable);
     }
   }
 
@@ -87,6 +92,31 @@ class DatabaseHelper {
       expiry TEXT NOT NULL,
       last4 TEXT NOT NULL,
       is_default INTEGER NOT NULL DEFAULT 0
+    )
+  ''';
+
+  static const _purchasesTable = '''
+    CREATE TABLE purchases (
+      id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      total REAL NOT NULL,
+      payment_method TEXT NOT NULL,
+      card_last4 TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY (id, user_id)
+    )
+  ''';
+
+  static const _purchaseItemsTable = '''
+    CREATE TABLE purchase_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      purchase_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      product_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      quantity INTEGER NOT NULL,
+      unit_price REAL NOT NULL,
+      image_url TEXT
     )
   ''';
 }

@@ -19,7 +19,11 @@ func main() {
 
 	db.Connect()
 
+	os.MkdirAll("uploads", 0o755)
+
 	r := gin.Default()
+
+	r.Static("/uploads", "./uploads")
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
@@ -42,6 +46,7 @@ func main() {
 			admin.PUT("/products/:id", handlers.UpdateProduct)
 			admin.DELETE("/products/:id", handlers.DeleteProduct)
 			admin.GET("/history", handlers.GetHistory)
+			admin.POST("/uploads/image", handlers.UploadProductImage)
 		}
 
 		api.GET("/cart", handlers.GetCart)

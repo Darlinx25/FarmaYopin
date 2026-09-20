@@ -3,9 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
+import '../api/auth_storage.dart';
 import '../models/cart_item.dart';
 import '../models/payment_method.dart';
+import '../models/purchase.dart';
 import '../services/cart_service.dart';
+import '../services/purchase_service.dart';
 import 'payment_options_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -53,7 +56,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     setState(() => _checking = true);
     try {
       final items = CartService.instance.items;
-      await ApiClient.post(
+      final response = await ApiClient.post(
         '/api/cart/checkout',
         body: {
           'items': items
@@ -69,6 +72,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   : '',
         },
       );
+      final userId = await AuthStorage.getUserId();
+      final total = items.fold(0.0, (sum, i) => sum + i.subtotal);
+      if (userId != null && response is Map<String, dynamic>) {
+        final purchase = Purchase(
+          id: response['sale_id'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+          total: (response['total'] as num?)?.toDouble() ?? total,
+          paymentMethod:
+              _selection.method == PaymentMethod.card ? 'card' : 'cash',
+          cardLast4: _selection.method == PaymentMethod.card
+              ? _selection.card?.last4 ?? ''
+              : '',
+          date: DateTime.now(),
+          items: items
+              .map(
+                (i) => PurchaseItem(
+                  productId: i.productId,
+                  name: i.name,
+                  quantity: i.quantity,
+                  unitPrice: i.price,
+                  imageUrl: i.imageUrl,
+                ),
+              )
+              .toList(),
+        );
+        try {
+          await PurchaseService.instance.savePurchase(userId, purchase);
+        } catch (_) {}
+      }
       await CartService.instance.clear();
 
       if (!mounted) return;
@@ -230,7 +261,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
             child: item.imageUrl.isNotEmpty
                 ? Image.network(
-                    item.imageUrl,
+                    ApiClient.resolveImageUrl(item.imageUrl),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         const _MedicationThumb(),

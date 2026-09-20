@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../api/api_client.dart';
+import '../api/auth_storage.dart';
 import '../models/purchase.dart';
+import '../services/purchase_service.dart';
 import 'cart_screen.dart';
 import 'profile_screen.dart';
 import 'purchase_detail_screen.dart';
@@ -32,29 +34,50 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       _loading = true;
       _error = null;
     });
+    final userId = await AuthStorage.getUserId();
+
+    List<Purchase> list = [];
+    var serverOk = true;
     try {
       final data = await ApiClient.get('/api/purchases');
-      final list = (data['data'] as List<dynamic>? ?? [])
+      list = (data['data'] as List<dynamic>? ?? [])
           .map((e) => Purchase.fromJson(e as Map<String, dynamic>))
           .toList();
+    } on ApiException catch (e) {
+      serverOk = false;
+      debugPrint('[COMPRAS] ApiException: ${e.message}');
+    } catch (e, s) {
+      serverOk = false;
+      debugPrint('[COMPRAS] error inesperado: $e\n$s');
+    }
+
+    if (serverOk) {
+      if (userId != null) {
+        for (final purchase in list) {
+          try {
+            await PurchaseService.instance.savePurchase(userId, purchase);
+          } catch (_) {}
+        }
+      }
       if (!mounted) return;
       setState(() => _purchases = list);
-    } on ApiException catch (e) {
+    } else {
+      if (userId != null) {
+        try {
+          await PurchaseService.instance.load(userId);
+          list = PurchaseService.instance.purchases;
+        } catch (_) {}
+      }
       if (!mounted) return;
       setState(() {
-        _error = e.message;
-        _purchases = [];
+        _purchases = list;
+        if (list.isEmpty) {
+          _error = 'No se pudo conectar con el servidor y no hay compras guardadas';
+        }
       });
-    } catch (e, s) {
-      debugPrint('[COMPRAS] error inesperado: $e\n$s');
-      if (!mounted) return;
-      setState(() {
-        _error = 'No se pudo conectar con el servidor';
-        _purchases = [];
-      });
-    } finally {
-      if (mounted) setState(() => _loading = false);
     }
+
+    if (mounted) setState(() => _loading = false);
   }
 
   void _go(Widget screen) {

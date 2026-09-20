@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../api/api_client.dart';
 import '../models/purchase.dart';
 
 class PurchaseDetailScreen extends StatelessWidget {
@@ -214,7 +215,7 @@ class PurchaseDetailScreen extends StatelessWidget {
             ),
             child: item.imageUrl.isNotEmpty
                 ? Image.network(
-                    item.imageUrl,
+                    ApiClient.resolveImageUrl(item.imageUrl),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         const _MedicationThumb(),

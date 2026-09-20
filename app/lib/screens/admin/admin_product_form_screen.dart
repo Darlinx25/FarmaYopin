@@ -77,6 +77,10 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
     setState(() => _loading = true);
     try {
       debugPrint('[ADMIN-PRODUCT] creando producto: $name');
+      String imageUrl = '';
+      if (_image != null) {
+        imageUrl = await ApiClient.uploadImage(_image!);
+      }
       await ApiClient.post(
         '/api/products',
         body: {
@@ -84,7 +88,7 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
           'description': description,
           'price': price,
           'stock': stock,
-          'image_url': '',
+          'image_url': imageUrl,
           'available': _disponible,
         },
       );
@@ -275,15 +279,6 @@ class _AdminProductFormScreenState extends State<AdminProductFormScreen> {
                       fontFamily: 'Work Sans',
                       fontWeight: FontWeight.w400,
                       letterSpacing: -0.26,
-                    ),
-                  ),
-                  Text(
-                    'Solo se previsualiza localmente',
-                    style: TextStyle(
-                      color: Color(0xFF9CA3AF),
-                      fontSize: 11,
-                      fontFamily: 'Work Sans',
-                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],

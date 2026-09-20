@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../api/api_client.dart';
 import '../models/cart_item.dart';
 import '../models/product.dart';
 import '../services/cart_service.dart';
@@ -118,11 +119,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       width: double.infinity,
       height: 220,
       color: const Color(0xFFD6E9F9),
-      child: const Icon(
-        Icons.medication,
-        color: Color(0xFF1E47EB),
-        size: 64,
-      ),
+      child: widget.product.imageUrl.isEmpty
+          ? const Icon(
+              Icons.medication,
+              color: Color(0xFF1E47EB),
+              size: 64,
+            )
+          : Image.network(
+              ApiClient.resolveImageUrl(widget.product.imageUrl),
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => const Icon(
+                Icons.medication,
+                color: Color(0xFF1E47EB),
+                size: 64,
+              ),
+            ),
     );
   }
 

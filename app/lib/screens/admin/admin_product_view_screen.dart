@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../api/api_client.dart';
 import '../../models/product.dart';
 import 'admin_edit_product_screen.dart';
 import 'admin_product_history_screen.dart';
@@ -111,7 +112,7 @@ class AdminProductViewScreen extends StatelessWidget {
       height: 220,
       color: const Color(0xFFD6E9F9),
       child: Image.network(
-        product.imageUrl,
+        ApiClient.resolveImageUrl(product.imageUrl),
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => const Icon(
           Icons.medication,
