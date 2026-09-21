@@ -74,6 +74,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _addToCart(Product product) {
+    final inCart = CartService.instance.items
+        .where((i) => i.productId == product.id)
+        .fold(0, (sum, i) => sum + i.quantity);
+    if (inCart + 1 > product.stock) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Stock insuficiente')),
+      );
+      return;
+    }
     CartService.instance.add(CartItem.fromProduct(product, 1));
   }
 

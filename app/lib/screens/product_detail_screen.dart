@@ -17,7 +17,18 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
 
-  void _increment() => setState(() => _quantity++);
+  void _increment(Product product) {
+    final inCart = CartService.instance.items
+        .where((i) => i.productId == product.id)
+        .fold(0, (sum, i) => sum + i.quantity);
+    if (_quantity + 1 > product.stock - inCart) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Stock insuficiente')),
+      );
+      return;
+    }
+    setState(() => _quantity++);
+  }
   void _decrement() {
     if (_quantity > 1) setState(() => _quantity--);
   }
@@ -198,7 +209,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             children: [
               Expanded(child: _buildStatusCard(product)),
               const SizedBox(width: 12),
-              Expanded(child: _buildQuantityCard()),
+              Expanded(child: _buildQuantityCard(product)),
             ],
           ),
         ],
@@ -254,7 +265,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildQuantityCard() {
+  Widget _buildQuantityCard(Product product) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: ShapeDecoration(
@@ -307,7 +318,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               const SizedBox(width: 16),
               GestureDetector(
-                onTap: _increment,
+                onTap: () => _increment(product),
                 child: Container(
                   width: 24,
                   height: 24,
@@ -388,6 +399,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _addToCart(Product product) {
+    final inCart = CartService.instance.items
+        .where((i) => i.productId == product.id)
+        .fold(0, (sum, i) => sum + i.quantity);
+    if (inCart + _quantity > product.stock) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Stock insuficiente'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
     CartService.instance.add(
       CartItem.fromProduct(product, _quantity),
     );

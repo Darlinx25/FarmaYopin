@@ -6,6 +6,7 @@ import '../api/api_client.dart';
 import '../models/cart_item.dart';
 import '../models/payment_method.dart';
 import '../services/cart_service.dart';
+import '../services/catalog_service.dart';
 import 'payment_options_screen.dart';
 import 'payment_screen.dart';
 
@@ -286,6 +287,19 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _increase(CartItem item) {
+    int? max;
+    for (final p in CatalogService.instance.products) {
+      if (p.id == item.productId) {
+        max = p.stock;
+        break;
+      }
+    }
+    if (max != null && item.quantity >= max) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Stock insuficiente')),
+      );
+      return;
+    }
     CartService.instance.updateQuantity(item.productId, item.quantity + 1);
   }
 

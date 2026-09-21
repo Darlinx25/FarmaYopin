@@ -8,6 +8,7 @@ import '../models/cart_item.dart';
 import '../models/payment_method.dart';
 import '../models/purchase.dart';
 import '../services/cart_service.dart';
+import '../services/catalog_service.dart';
 import '../services/purchase_service.dart';
 import 'payment_options_screen.dart';
 
@@ -101,6 +102,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         } catch (_) {}
       }
       await CartService.instance.clear();
+      await CatalogService.instance.reload();
 
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context);
