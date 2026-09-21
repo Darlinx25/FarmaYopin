@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
@@ -24,6 +22,22 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _remember = false;
   bool _obscure = true;
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberedEmail();
+  }
+
+  Future<void> _loadRememberedEmail() async {
+    final email = await AuthStorage.getRememberedEmail();
+    if (email == null || email.isEmpty) return;
+    if (!mounted) return;
+    setState(() {
+      _emailController.text = email;
+      _remember = true;
+    });
+  }
 
   @override
   void dispose() {
@@ -71,6 +85,11 @@ class _LoginScreenState extends State<LoginScreen> {
         email: user['email'],
         role: user['role'],
       );
+      if (_remember) {
+        await AuthStorage.saveRememberedEmail(email);
+      } else {
+        await AuthStorage.clearRememberedEmail();
+      }
       await CartService.instance.load(user['id'] as int);
       await CardService.instance.load(user['id'] as int);
       await CatalogService.instance.load();
@@ -100,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final height = max(constraints.maxHeight, 800.0);
+        final height = constraints.maxHeight;
         return Scaffold(
           body: SingleChildScrollView(
             child: Center(
@@ -265,20 +284,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ],
-              ),
-              GestureDetector(
-                onTap: () {
-                },
-                child: const Text(
-                  '¿Olvidaste tu contraseña?',
-                  style: TextStyle(
-                    color: Color(0xFFF28E2A),
-                    fontSize: 13,
-                    fontFamily: 'Work Sans',
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.26,
-                  ),
-                ),
               ),
             ],
           ),

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
@@ -93,7 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final height = max(constraints.maxHeight, 840.0);
+        final height = constraints.maxHeight;
         return Scaffold(
           body: SingleChildScrollView(
             child: Center(

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../api/auth_storage.dart';
@@ -112,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, _) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            final height = max(constraints.maxHeight, 720.0);
+            final height = constraints.maxHeight;
             return Scaffold(
               backgroundColor: const Color(0xFFFAFAF9),
               body: SingleChildScrollView(

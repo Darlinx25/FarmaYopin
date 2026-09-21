@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
@@ -142,7 +140,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
         return LayoutBuilder(
           builder: (context, constraints) {
-            final height = max(constraints.maxHeight, 780.0);
+            final height = constraints.maxHeight;
             return Scaffold(
               backgroundColor: const Color(0xFFFAFAF9),
               body: SingleChildScrollView(

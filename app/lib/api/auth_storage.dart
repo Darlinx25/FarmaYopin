@@ -6,6 +6,7 @@ class AuthStorage {
   static const _emailKey = 'email';
   static const _roleKey = 'role';
   static const _userIdKey = 'user_id';
+  static const _rememberedEmailKey = 'remembered_email';
 
   static Future<void> saveSession({
     required String token,
@@ -50,6 +51,21 @@ class AuthStorage {
   static Future<bool> isLoggedIn() async {
     final token = await getToken();
     return token != null && token.isNotEmpty;
+  }
+
+  static Future<String?> getRememberedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_rememberedEmailKey);
+  }
+
+  static Future<void> saveRememberedEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_rememberedEmailKey, email);
+  }
+
+  static Future<void> clearRememberedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_rememberedEmailKey);
   }
 
   static Future<void> clear() async {

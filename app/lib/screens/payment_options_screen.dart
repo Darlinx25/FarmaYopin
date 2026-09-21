@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../models/card.dart';
@@ -71,7 +69,7 @@ class _PaymentOptionsScreenState extends State<PaymentOptionsScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final height = max(constraints.maxHeight, 720.0);
+        final height = constraints.maxHeight;
         return Scaffold(
           backgroundColor: const Color(0xFFFAFAF9),
           body: SingleChildScrollView(

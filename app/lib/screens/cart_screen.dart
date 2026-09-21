@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
@@ -54,7 +52,7 @@ class _CartScreenState extends State<CartScreen> {
 
         return LayoutBuilder(
           builder: (context, constraints) {
-            final height = max(constraints.maxHeight, 720.0);
+            final height = constraints.maxHeight;
             return Scaffold(
               backgroundColor: const Color(0xFFFAFAF9),
               body: SingleChildScrollView(

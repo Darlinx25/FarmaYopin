@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -111,7 +109,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final height = max(constraints.maxHeight, 700.0);
+        final height = constraints.maxHeight;
         return Scaffold(
           backgroundColor: const Color(0xFFFAFAF9),
           body: SingleChildScrollView(
